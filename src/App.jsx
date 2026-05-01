@@ -96,6 +96,25 @@ const fallbackUsdPrices = {
 
 const RUB_SERVICE_PREMIUM = 3;
 
+const fetchUsdtRubMarketRate = async () => {
+  const sources = [
+    "https://api.coingecko.com/api/v3/simple/price?ids=tether&vs_currencies=rub",
+    "https://min-api.cryptocompare.com/data/price?fsym=USDT&tsyms=RUB",
+  ];
+
+  for (const url of sources) {
+    try {
+      const response = await fetch(url, { cache: "no-store" });
+      if (!response.ok) continue;
+      const data = await response.json();
+      const value = data?.tether?.rub || data?.RUB;
+      if (Number(value) > 0) return Number(value);
+    } catch (_) {}
+  }
+
+  return 0;
+};
+
 const getRubServiceRate = (marketRubRate) => {
   const base = Number(marketRubRate || 0);
   return base > 0 ? base + RUB_SERVICE_PREMIUM : 77;
@@ -407,7 +426,9 @@ export default function TetherPointSite() {
         const fxResponse = await fetch("https://open.er-api.com/v6/latest/USD", { cache: "no-store" });
         const fxData = await fxResponse.json();
         const rates = fxData?.rates || {};
-        const marketRubRate = rates.RUB ? Number(rates.RUB) : 0;
+        const fxRubRate = rates.RUB ? Number(rates.RUB) : 0;
+        const usdtRubRate = await fetchUsdtRubMarketRate();
+        const marketRubRate = usdtRubRate || fxRubRate;
         const serviceRubRate = getRubServiceRate(marketRubRate);
 
         const fxNext = {
