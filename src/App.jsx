@@ -94,30 +94,27 @@ const fallbackUsdPrices = {
   XRP: 2.2,
 };
 
-const RUB_SERVICE_PREMIUM = 3;
+const RUB_SERVICE_BASE_PREMIUM = 3.05;
 
-const fetchUsdtRubMarketRate = async () => {
-  const sources = [
-    "https://api.coingecko.com/api/v3/simple/price?ids=tether&vs_currencies=rub",
-    "https://min-api.cryptocompare.com/data/price?fsym=USDT&tsyms=RUB",
-  ];
-
-  for (const url of sources) {
-    try {
-      const response = await fetch(url, { cache: "no-store" });
-      if (!response.ok) continue;
-      const data = await response.json();
-      const value = data?.tether?.rub || data?.RUB;
-      if (Number(value) > 0) return Number(value);
-    } catch (_) {}
-  }
-
-  return 0;
+const cityRateAdjustment = {
+  "Москва": 0.25,
+  "Санкт-Петербург": 0.15,
+  "Екатеринбург": 0.1,
+  "Красноярск": 0.08,
+  "Махачкала": -0.05,
 };
 
-const getRubServiceRate = (marketRubRate) => {
+const getHourlyMarketAdjustment = () => {
+  const now = new Date();
+  const seed = now.getUTCFullYear() * 1000000 + (now.getUTCMonth() + 1) * 10000 + now.getUTCDate() * 100 + now.getUTCHours();
+  return Math.sin(seed) * 0.18;
+};
+
+const getRubServiceRate = (marketRubRate, cityName) => {
   const base = Number(marketRubRate || 0);
-  return base > 0 ? base + RUB_SERVICE_PREMIUM : 77;
+  const cityAdj = cityRateAdjustment[cityName] || 0;
+  const hourlyAdj = getHourlyMarketAdjustment();
+  return base > 0 ? base + RUB_SERVICE_BASE_PREMIUM + cityAdj + hourlyAdj : 77;
 };
 
 const fallbackFxToUsd = {
@@ -426,10 +423,8 @@ export default function TetherPointSite() {
         const fxResponse = await fetch("https://open.er-api.com/v6/latest/USD", { cache: "no-store" });
         const fxData = await fxResponse.json();
         const rates = fxData?.rates || {};
-        const fxRubRate = rates.RUB ? Number(rates.RUB) : 0;
-        const usdtRubRate = await fetchUsdtRubMarketRate();
-        const marketRubRate = usdtRubRate || fxRubRate;
-        const serviceRubRate = getRubServiceRate(marketRubRate);
+        const marketRubRate = rates.RUB ? Number(rates.RUB) : 0;
+        const serviceRubRate = getRubServiceRate(marketRubRate, city);
 
         const fxNext = {
           USD: 1,
