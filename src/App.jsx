@@ -113,10 +113,10 @@ const fallbackFxToUsd = {
 };
 
 const exchangeMarkup = {
-  fiatToCrypto: 1.02,
-  cryptoToFiat: 0.98,
-  cryptoToCrypto: 0.995,
-  fiatToFiat: 0.99,
+  fiatToCrypto: 1,
+  cryptoToFiat: 1,
+  cryptoToCrypto: 1,
+  fiatToFiat: 1,
 };
 
 const ru = {
