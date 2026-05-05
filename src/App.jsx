@@ -30,6 +30,7 @@ const cityNamesRu = [
   "Волгоград",
   "Воронеж",
   "Екатеринбург",
+  "Иваново",
   "Калуга",
   "Киров",
   "Кострома",
@@ -49,6 +50,7 @@ const cityNamesRu = [
 const cityNamesEn = [
   "Cheboksary",
   "Ekaterinburg",
+  "Ivanovo",
   "Kaluga",
   "Kirov",
   "Kostroma",
@@ -104,17 +106,17 @@ const cityRateAdjustment = {
   "Махачкала": -0.05,
 };
 
-const getHourlyMarketAdjustment = () => {
+const getLiveMarketAdjustment = () => {
   const now = new Date();
-  const seed = now.getUTCFullYear() * 1000000 + (now.getUTCMonth() + 1) * 10000 + now.getUTCDate() * 100 + now.getUTCHours();
-  return Math.sin(seed) * 0.18;
+  const fiveMinuteSlot = Math.floor(now.getTime() / (5 * 60 * 1000));
+  return Math.sin(fiveMinuteSlot * 12.9898) * 0.28;
 };
 
 const getRubServiceRate = (marketRubRate, cityName) => {
   const base = Number(marketRubRate || 0);
   const cityAdj = cityRateAdjustment[cityName] || 0;
-  const hourlyAdj = getHourlyMarketAdjustment();
-  return base > 0 ? base + RUB_SERVICE_BASE_PREMIUM + cityAdj + hourlyAdj : 77;
+  const liveAdj = getLiveMarketAdjustment();
+  return base > 0 ? base + RUB_SERVICE_BASE_PREMIUM + cityAdj + liveAdj : 77;
 };
 
 const fallbackFxToUsd = {
@@ -155,7 +157,7 @@ const ru = {
   rateNote: "Финальный курс, резерв и адрес обменного пункта подтверждаются менеджером в Telegram.",
   fixRate: "Зафиксировать курс в Telegram",
   citiesTitle: "Города присутствия",
-  citiesText: "Выберите город и уточните актуальный адрес обменного пункта через Telegram.",
+  citiesText: "В некоторых городах доступно несколько пунктов. Адреса обменных пунктов уточняйте у менеджера в Telegram.",
   addressBtn: "Уточнить адрес",
   whyTitle: "Почему выбирают нас",
   reviewsTitle: "Отзывы клиентов",
@@ -188,7 +190,7 @@ const en = {
   rateNote: "The final rate, reserve and exchange point address are confirmed by a manager via Telegram.",
   fixRate: "Fix rate on Telegram",
   citiesTitle: "Available cities",
-  citiesText: "Select your city and request the current exchange point address via Telegram.",
+  citiesText: "Some cities have several exchange points. Please confirm office addresses with a manager on Telegram.",
   addressBtn: "Request address",
   whyTitle: "Why choose us",
   reviewsTitle: "Client reviews",
@@ -420,7 +422,7 @@ export default function TetherPointSite() {
           });
         }
 
-        const fxResponse = await fetch("https://open.er-api.com/v6/latest/USD", { cache: "no-store" });
+        const fxResponse = await fetch(`https://open.er-api.com/v6/latest/USD?t=${Date.now()}`, { cache: "no-store" });
         const fxData = await fxResponse.json();
         const rates = fxData?.rates || {};
         const marketRubRate = rates.RUB ? Number(rates.RUB) : 0;
@@ -450,12 +452,12 @@ export default function TetherPointSite() {
     }
 
     loadRates();
-    const interval = setInterval(loadRates, 120000);
+    const interval = setInterval(loadRates, 300000);
     return () => {
       isMounted = false;
       clearInterval(interval);
     };
-  }, []);
+  }, [city]);
 
   const amountNumber = Number(String(amount).replace(",", ".")) || 0;
 
