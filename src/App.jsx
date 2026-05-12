@@ -25,49 +25,127 @@ const cryptoCurrencies = ["USDT", "BTC", "ETH", "USDC", "TON", "TRX", "BNB", "SO
 const allCurrencies = [...fiatCurrencies, ...cryptoCurrencies];
 
 const cityNamesRu = [
+  "Архангельск",
+  "Балашиха",
+  "Барнаул",
+  "Белгород",
+  "Брянск",
   "Великий Новгород",
-  "Вологда",
+  "Владивосток",
+  "Владимир",
   "Волгоград",
+  "Вологда",
   "Воронеж",
   "Екатеринбург",
   "Иваново",
+  "Ижевск",
+  "Иркутск",
+  "Казань",
+  "Калининград",
   "Калуга",
+  "Кемерово",
   "Киров",
   "Кострома",
+  "Краснодар",
   "Красноярск",
+  "Курск",
+  "Липецк",
+  "Магнитогорск",
   "Махачкала",
   "Москва",
+  "Набережные Челны",
+  "Нижний Новгород",
+  "Нижний Тагил",
+  "Новосибирск",
+  "Омск",
+  "Оренбург",
+  "Пенза",
+  "Пермь",
+  "Ростов-на-Дону",
+  "Рязань",
+  "Самара",
   "Санкт-Петербург",
+  "Саранск",
   "Саратов",
+  "Севастополь",
   "Смоленск",
+  "Сочи",
+  "Ставрополь",
+  "Сургут",
+  "Тамбов",
   "Тверь",
   "Тольятти",
   "Томск",
   "Тула",
+  "Тюмень",
+  "Ульяновск",
+  "Уфа",
+  "Хабаровск",
   "Чебоксары",
+  "Челябинск",
+  "Ярославль",
 ];
 
 const cityNamesEn = [
-  "Cheboksary",
-  "Ekaterinburg",
+  "Arkhangelsk",
+  "Balashikha",
+  "Barnaul",
+  "Belgorod",
+  "Bryansk",
+  "Veliky Novgorod",
+  "Vladivostok",
+  "Vladimir",
+  "Volgograd",
+  "Vologda",
+  "Voronezh",
+  "Yekaterinburg",
   "Ivanovo",
+  "Izhevsk",
+  "Irkutsk",
+  "Kazan",
+  "Kaliningrad",
   "Kaluga",
+  "Kemerovo",
   "Kirov",
   "Kostroma",
+  "Krasnodar",
   "Krasnoyarsk",
+  "Kursk",
+  "Lipetsk",
+  "Magnitogorsk",
   "Makhachkala",
   "Moscow",
+  "Naberezhnye Chelny",
+  "Nizhny Novgorod",
+  "Nizhny Tagil",
+  "Novosibirsk",
+  "Omsk",
+  "Orenburg",
+  "Penza",
+  "Perm",
+  "Rostov-on-Don",
+  "Ryazan",
+  "Samara",
   "Saint Petersburg",
+  "Saransk",
   "Saratov",
+  "Sevastopol",
   "Smolensk",
-  "Tomsk",
-  "Tolyatti",
-  "Tula",
+  "Sochi",
+  "Stavropol",
+  "Surgut",
+  "Tambov",
   "Tver",
-  "Veliky Novgorod",
-  "Vologda",
-  "Volgograd",
-  "Voronezh",
+  "Tolyatti",
+  "Tomsk",
+  "Tula",
+  "Tyumen",
+  "Ulyanovsk",
+  "Ufa",
+  "Khabarovsk",
+  "Cheboksary",
+  "Chelyabinsk",
+  "Yaroslavl",
 ];
 
 const cryptoIds = {
@@ -100,10 +178,15 @@ const RUB_SERVICE_BASE_PREMIUM = 3.05;
 
 const cityRateAdjustment = {
   "Москва": 0.25,
+  "Moscow": 0.25,
   "Санкт-Петербург": 0.15,
+  "Saint Petersburg": 0.15,
   "Екатеринбург": 0.1,
+  "Yekaterinburg": 0.1,
   "Красноярск": 0.08,
+  "Krasnoyarsk": 0.08,
   "Махачкала": -0.05,
+  "Makhachkala": -0.05,
 };
 
 const getLiveMarketAdjustment = () => {
@@ -376,7 +459,10 @@ export default function TetherPointSite() {
   const faqs = lang === "ru" ? faqRu : faqEn;
 
   useEffect(() => {
-    setCity((lang === "ru" ? cityNamesRu : cityNamesEn)[0]);
+    const fromList = lang === "ru" ? cityNamesEn : cityNamesRu;
+    const toList = lang === "ru" ? cityNamesRu : cityNamesEn;
+    const currentIndex = fromList.indexOf(city);
+    setCity(currentIndex >= 0 ? toList[currentIndex] : toList[0]);
   }, [lang]);
 
   useEffect(() => {
@@ -631,14 +717,14 @@ export default function TetherPointSite() {
 
         <section id="cities" className="mx-auto max-w-7xl px-4 py-16 md:px-6 md:py-24">
           <SectionTitle kicker="Russia" title={t.citiesTitle} text={t.citiesText} />
-          <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+          <div className="grid gap-2 min-[420px]:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
             {cities.map((item) => (
-              <div key={item} className="group rounded-3xl border border-white/8 bg-white/[0.045] p-5 transition hover:border-emerald-400/35 hover:bg-emerald-400/[0.08]">
-                <div className="mb-5 flex items-center gap-3">
-                  <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-emerald-400/10 text-emerald-300">
+              <div key={item} className="group rounded-3xl border border-white/8 bg-white/[0.045] p-4 transition hover:border-emerald-400/35 hover:bg-emerald-400/[0.08] md:p-5">
+                <div className="mb-4 flex items-center gap-3">
+                  <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-emerald-400/10 text-emerald-300 md:h-11 md:w-11">
                     <MapPin className="h-5 w-5" />
                   </div>
-                  <div className="text-lg font-black">{item}</div>
+                  <div className="text-base font-black leading-tight md:text-lg">{item}</div>
                 </div>
                 <a href={`${TELEGRAM_URL}?text=${encodeURIComponent(`Здравствуйте. Хочу уточнить адрес обменного пункта Tether Point. Город: ${item}.`)}`} className="inline-flex w-full items-center justify-center rounded-2xl border border-white/10 bg-white/[0.05] px-4 py-3 text-sm font-bold text-white/80 transition group-hover:border-emerald-400/35 group-hover:text-emerald-200">
                   {t.addressBtn}
