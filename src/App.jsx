@@ -41,7 +41,7 @@ const usdPrices = {
 const fxToUsd = {
   USD: 1,
   EUR: 1.09,
-  RUB: 1 / 80,
+  RUB: 1 / 78,
   KZT: 1 / 520,
   CNY: 1 / 7.2,
   AED: 1 / 3.6725,
@@ -201,11 +201,6 @@ function formatNumber(value, max = 6) {
   }).format(value);
 }
 
-function telegramLink({ amount, from, to, result }) {
-  const text = `Здравствуйте. Хочу обменять ${amount} ${from} на ${to}. Расчет сайта: примерно ${formatNumber(result)} ${to}.`;
-  return `${TELEGRAM_URL}?text=${encodeURIComponent(text)}`;
-}
-
 function LogoMark() {
   return (
     <div className="relative h-11 w-11 shrink-0 rounded-full bg-emerald-500/15 shadow-[0_0_36px_rgba(16,185,129,0.38)] ring-1 ring-emerald-400/40">
@@ -285,8 +280,6 @@ export default function TetherPointSite() {
     !isCrypto(from) && isCrypto(to) && estimatedRate > 0
       ? `1 ${to} ≈ ${formatNumber(1 / estimatedRate, 2)} ${from}`
       : `1 ${from} ≈ ${formatNumber(estimatedRate, 2)} ${to}`;
-  const tgHref = telegramLink({ amount, from, to, result });
-
   const swapDirection = () => {
     setFrom(to);
     setTo(from);
@@ -446,7 +439,7 @@ export default function TetherPointSite() {
                 {formatNumber(result, 2)} <span className="text-emerald-400">{to}</span>
               </div>
               <p className="mt-5 text-sm leading-6 text-white/58">{t.rateNote}</p>
-              <a href={tgHref} className="mt-7 inline-flex h-14 w-full items-center justify-center gap-2 rounded-2xl bg-emerald-400 px-6 text-base font-black text-[#07100c] transition hover:bg-emerald-300">
+              <a href={TELEGRAM_URL} className="mt-7 inline-flex h-14 w-full items-center justify-center gap-2 rounded-2xl bg-emerald-400 px-6 text-base font-black text-[#07100c] transition hover:bg-emerald-300">
                 <MessageCircle className="h-5 w-5" /> {t.fixRate}
               </a>
             </div>
