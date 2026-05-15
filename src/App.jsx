@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useRef, useState } from "react";
+import React, { useMemo, useRef, useState } from "react";
 
 const Icon = ({ children, className = "" }) => (
   <span className={`inline-flex items-center justify-center ${className}`}>{children}</span>
@@ -11,7 +11,6 @@ const ChevronDown = ({ className = "" }) => <Icon className={className}>⌄</Ico
 const ChevronLeft = ({ className = "" }) => <Icon className={className}>‹</Icon>;
 const ChevronRight = ({ className = "" }) => <Icon className={className}>›</Icon>;
 const Globe2 = ({ className = "" }) => <Icon className={className}>🌐</Icon>;
-const MapPin = ({ className = "" }) => <Icon className={className}>⌖</Icon>;
 const MessageCircle = ({ className = "" }) => <Icon className={className}>↗</Icon>;
 const ShieldCheck = ({ className = "" }) => <Icon className={className}>◇</Icon>;
 const Star = ({ className = "" }) => <Icon className={className}>★</Icon>;
@@ -19,344 +18,164 @@ const WalletCards = ({ className = "" }) => <Icon className={className}>▣</Ico
 const Zap = ({ className = "" }) => <Icon className={className}>⚡</Icon>;
 
 const TELEGRAM_URL = "https://t.me/TetherPointExchange";
+const WORKING_HOURS = "09:00–19:30";
+const CLIENT_RATE_BONUS = 1.02;
 
 const fiatCurrencies = ["RUB", "KZT", "USD", "EUR", "CNY", "AED", "TRY", "THB"];
 const cryptoCurrencies = ["USDT", "BTC", "ETH", "USDC", "TON", "TRX", "BNB", "SOL", "LTC", "XRP"];
 const allCurrencies = [...fiatCurrencies, ...cryptoCurrencies];
 
-const cityNamesRu = [
-  "Архангельск",
-  "Балашиха",
-  "Барнаул",
-  "Белгород",
-  "Брянск",
-  "Великий Новгород",
-  "Владивосток",
-  "Владимир",
-  "Волгоград",
-  "Вологда",
-  "Воронеж",
-  "Екатеринбург",
-  "Иваново",
-  "Ижевск",
-  "Иркутск",
-  "Казань",
-  "Калининград",
-  "Калуга",
-  "Кемерово",
-  "Киров",
-  "Кострома",
-  "Краснодар",
-  "Красноярск",
-  "Курск",
-  "Липецк",
-  "Магнитогорск",
-  "Махачкала",
-  "Москва",
-  "Набережные Челны",
-  "Нижний Новгород",
-  "Нижний Тагил",
-  "Новосибирск",
-  "Омск",
-  "Оренбург",
-  "Пенза",
-  "Пермь",
-  "Ростов-на-Дону",
-  "Рязань",
-  "Самара",
-  "Санкт-Петербург",
-  "Саранск",
-  "Саратов",
-  "Севастополь",
-  "Смоленск",
-  "Сочи",
-  "Ставрополь",
-  "Сургут",
-  "Тамбов",
-  "Тверь",
-  "Тольятти",
-  "Томск",
-  "Тула",
-  "Тюмень",
-  "Ульяновск",
-  "Уфа",
-  "Хабаровск",
-  "Чебоксары",
-  "Челябинск",
-  "Ярославль",
-];
-
-const cityNamesEn = [
-  "Arkhangelsk",
-  "Balashikha",
-  "Barnaul",
-  "Belgorod",
-  "Bryansk",
-  "Veliky Novgorod",
-  "Vladivostok",
-  "Vladimir",
-  "Volgograd",
-  "Vologda",
-  "Voronezh",
-  "Yekaterinburg",
-  "Ivanovo",
-  "Izhevsk",
-  "Irkutsk",
-  "Kazan",
-  "Kaliningrad",
-  "Kaluga",
-  "Kemerovo",
-  "Kirov",
-  "Kostroma",
-  "Krasnodar",
-  "Krasnoyarsk",
-  "Kursk",
-  "Lipetsk",
-  "Magnitogorsk",
-  "Makhachkala",
-  "Moscow",
-  "Naberezhnye Chelny",
-  "Nizhny Novgorod",
-  "Nizhny Tagil",
-  "Novosibirsk",
-  "Omsk",
-  "Orenburg",
-  "Penza",
-  "Perm",
-  "Rostov-on-Don",
-  "Ryazan",
-  "Samara",
-  "Saint Petersburg",
-  "Saransk",
-  "Saratov",
-  "Sevastopol",
-  "Smolensk",
-  "Sochi",
-  "Stavropol",
-  "Surgut",
-  "Tambov",
-  "Tver",
-  "Tolyatti",
-  "Tomsk",
-  "Tula",
-  "Tyumen",
-  "Ulyanovsk",
-  "Ufa",
-  "Khabarovsk",
-  "Cheboksary",
-  "Chelyabinsk",
-  "Yaroslavl",
-];
-
-const cryptoIds = {
-  USDT: "tether",
-  BTC: "bitcoin",
-  ETH: "ethereum",
-  USDC: "usd-coin",
-  TON: "the-open-network",
-  TRX: "tron",
-  BNB: "binancecoin",
-  SOL: "solana",
-  LTC: "litecoin",
-  XRP: "ripple",
-};
-
-const fallbackUsdPrices = {
+const usdPrices = {
   USDT: 1,
   USDC: 1,
-  BTC: 76271,
-  ETH: 2261,
+  BTC: 80482,
+  ETH: 2255,
   TON: 3.2,
   TRX: 0.27,
-  BNB: 590,
-  SOL: 138,
+  BNB: 685,
+  SOL: 91,
   LTC: 86,
   XRP: 2.2,
 };
 
-const RUB_SERVICE_BASE_PREMIUM = 3.05;
-
-const cityRateAdjustment = {
-  "Москва": 0.25,
-  "Moscow": 0.25,
-  "Санкт-Петербург": 0.15,
-  "Saint Petersburg": 0.15,
-  "Екатеринбург": 0.1,
-  "Yekaterinburg": 0.1,
-  "Красноярск": 0.08,
-  "Krasnoyarsk": 0.08,
-  "Махачкала": -0.05,
-  "Makhachkala": -0.05,
-};
-
-const getLiveMarketAdjustment = () => {
-  const now = new Date();
-  const fiveMinuteSlot = Math.floor(now.getTime() / (5 * 60 * 1000));
-  return Math.sin(fiveMinuteSlot * 12.9898) * 0.28;
-};
-
-const getRubServiceRate = (marketRubRate, cityName) => {
-  const base = Number(marketRubRate || 0);
-  const cityAdj = cityRateAdjustment[cityName] || 0;
-  const liveAdj = getLiveMarketAdjustment();
-  return base > 0 ? base + RUB_SERVICE_BASE_PREMIUM + cityAdj + liveAdj : 77;
-};
-
-const fallbackFxToUsd = {
+const fxToUsd = {
   USD: 1,
-  EUR: 1.17,
-  RUB: 1 / 77,
+  EUR: 1.09,
+  RUB: 1 / 80,
   KZT: 1 / 520,
-  CNY: 1 / 6.83,
+  CNY: 1 / 7.2,
   AED: 1 / 3.6725,
-  TRY: 1 / 45.18,
-  THB: 1 / 32.5,
-};
-
-const exchangeMarkup = {
-  fiatToCrypto: 1,
-  cryptoToFiat: 1,
-  cryptoToCrypto: 1,
-  fiatToFiat: 1,
+  TRY: 1 / 38.5,
+  THB: 1 / 36.2,
 };
 
 const ru = {
-  nav: ["Калькулятор", "Города", "Преимущества", "Отзывы", "FAQ"],
-  heroLabel: "Сеть обменников по России",
-  heroTitle: "Tether Point",
-  heroSubtitle: "Обмен USDT, криптовалюты и фиатных валют в городах России",
-  heroText:
-    "Рассчитайте ориентировочную сумму обмена, выберите город и зафиксируйте условия через Telegram.",
+  nav: ["Калькулятор", "Преимущества", "Отзывы", "FAQ"],
+  heroLabel: "Обмен криптовалюты и наличных",
+  heroSubtitle: "Обмен USDT, криптовалюты и фиатных валют",
+  heroText: "Рассчитайте примерную сумму обмена и зафиксируйте условия через Telegram.",
   calcBtn: "Рассчитать обмен",
   tgBtn: "Написать в Telegram",
   calculatorTitle: "Калькулятор обмена",
-  calculatorText: "Live-расчет по рыночным данным с учетом сервисного коэффициента.",
+  calculatorText: "Примерный расчет по актуальным ориентировочным курсам. Финальные условия подтверждает менеджер.",
   give: "Отдаю",
   receive: "Получаю",
   amount: "Сумма",
-  city: "Город",
+  swap: "Смена направлений",
   result: "Вы получите примерно",
   rate: "Ориентировочный курс",
-  rateNote: "Финальный курс, резерв и адрес обменного пункта подтверждаются менеджером в Telegram.",
+  rateNote: "Калькулятор дает предварительный расчет. Финальный курс, резерв и формат сделки подтверждаются менеджером в Telegram.",
   fixRate: "Зафиксировать курс в Telegram",
-  citiesTitle: "Города присутствия",
-  citiesText: "В некоторых городах доступно несколько пунктов. Адреса обменных пунктов уточняйте у менеджера в Telegram.",
-  addressBtn: "Уточнить адрес",
   whyTitle: "Почему выбирают нас",
   reviewsTitle: "Отзывы клиентов",
   faqTitle: "FAQ",
+  hoursTitle: "График работы",
+  hoursText: "Ежедневно с 09:00 до 19:30",
   footerText: `Сервис обмена цифровых и фиатных валют, создан в 2025 году.
 Все права защищены. Остерегайтесь мошенников — переходите только по официальной ссылке в Telegram.`,
-  loading: "Обновляем курсы...",
-  live: "Live-курсы",
-  fallback: "Резервный расчет",
+  estimated: "Примерный расчет",
   lang: "EN",
 };
 
 const en = {
-  nav: ["Calculator", "Cities", "Benefits", "Reviews", "FAQ"],
-  heroLabel: "Exchange network across Russia",
-  heroTitle: "Tether Point",
-  heroSubtitle: "USDT, crypto and fiat exchange points across Russian cities",
-  heroText:
-    "Calculate an estimated exchange amount, choose your city and confirm the final terms via Telegram.",
+  nav: ["Calculator", "Benefits", "Reviews", "FAQ"],
+  heroLabel: "Crypto and cash exchange",
+  heroSubtitle: "USDT, crypto and fiat currency exchange",
+  heroText: "Calculate an estimated exchange amount and confirm the final terms via Telegram.",
   calcBtn: "Calculate exchange",
   tgBtn: "Contact on Telegram",
   calculatorTitle: "Exchange calculator",
-  calculatorText: "Live market-based calculation with a service coefficient included.",
+  calculatorText: "Estimated calculation using current indicative rates. Final terms are confirmed by a manager.",
   give: "You give",
   receive: "You receive",
   amount: "Amount",
-  city: "City",
+  swap: "Swap direction",
   result: "Estimated amount",
   rate: "Estimated rate",
-  rateNote: "The final rate, reserve and exchange point address are confirmed by a manager via Telegram.",
+  rateNote: "The calculator provides a preliminary estimate. Final rate, reserve and transaction format are confirmed by a manager via Telegram.",
   fixRate: "Fix rate on Telegram",
-  citiesTitle: "Available cities",
-  citiesText: "Some cities have several exchange points. Please confirm office addresses with a manager on Telegram.",
-  addressBtn: "Request address",
   whyTitle: "Why choose us",
   reviewsTitle: "Client reviews",
   faqTitle: "FAQ",
+  hoursTitle: "Working hours",
+  hoursText: "Daily from 09:00 to 19:30",
   footerText: `Digital and fiat currency exchange service established in 2025.
 All rights reserved. Beware of scammers — use only the official Telegram link.`,
-  loading: "Updating rates...",
-  live: "Live rates",
-  fallback: "Backup calculation",
+  estimated: "Estimated calculation",
   lang: "RU",
 };
 
 const stepsRu = [
-  ["01", "Рассчитайте сумму", "Выберите направление обмена, валюту, город и укажите сумму."],
-  ["02", "Напишите в Telegram", "Менеджер подтвердит курс, резерв, адрес и доступное время."],
-  ["03", "Выберите формат", "Доступны обмен в офисе, курьер и вывод на карту в офисе."],
+  ["01", "Рассчитайте сумму", "Выберите направление обмена, валюту и укажите сумму."],
+  ["02", "Напишите в Telegram", "Менеджер подтвердит курс, резерв, формат сделки и доступное время."],
+  ["03", "Выберите формат", "Доступны офисный обмен, курьер и вывод на карту."],
   ["04", "Завершите обмен", "Сделка проходит по заранее согласованным условиям без предоплат."],
 ];
 
 const stepsEn = [
-  ["01", "Calculate the amount", "Choose the exchange direction, currency, city and enter the amount."],
-  ["02", "Contact us on Telegram", "A manager will confirm the rate, reserve, address and available time."],
-  ["03", "Choose the format", "Office exchange, courier service and card payout at the office are available."],
+  ["01", "Calculate the amount", "Choose the exchange direction, currency and enter the amount."],
+  ["02", "Contact us on Telegram", "A manager will confirm the rate, reserve, transaction format and available time."],
+  ["03", "Choose the format", "Office exchange, courier service and card payout are available."],
   ["04", "Complete the exchange", "The transaction follows pre-confirmed terms with no prepayments."],
 ];
 
 const safetyRu = [
   ["Никаких предоплат", "Мы не просим переводить средства заранее. Условия подтверждаются до обмена."],
   ["Официальный Telegram", "Переходите только по ссылке с сайта: @TetherPointExchange."],
-  ["Подтверждение условий", "Курс, резерв, город и формат обмена фиксируются перед сделкой."],
+  ["Подтверждение условий", "Курс, резерв и формат обмена фиксируются перед сделкой."],
   ["Проверка реквизитов", "Перед переводом всегда сверяйте контакт и детали с менеджером."],
 ];
 
 const safetyEn = [
   ["No prepayments", "We do not ask you to transfer funds in advance. Terms are confirmed before the exchange."],
   ["Official Telegram", "Use only the link from the website: @TetherPointExchange."],
-  ["Terms confirmation", "Rate, reserve, city and exchange format are confirmed before the transaction."],
+  ["Terms confirmation", "Rate, reserve and exchange format are confirmed before the transaction."],
   ["Details check", "Always verify the contact and transaction details with the manager before transfer."],
 ];
 
 const benefitsRu = [
   [Zap, "Никаких предоплат", "Вы не переводите деньги заранее. Условия подтверждаются до обмена."],
-  [MapPin, "Офисы в городах", "Выберите город и уточните актуальный адрес обменного пункта через Telegram."],
-  [WalletCards, "Офис, курьер и карта", "Доступны обмен в офисе, выезд курьера и вывод на карту в офисе."],
-  [MessageCircle, "Telegram-заявка", "Курс, резерв и адрес удобно уточнить в одном чате."],
+  [WalletCards, "Офис, курьер и карта", "Доступны обмен в офисе, выезд курьера и вывод на карту."],
+  [MessageCircle, "Telegram-заявка", "Курс, резерв и условия удобно уточнить в одном чате."],
   [ShieldCheck, "Понятные условия", "Итоговые параметры сделки подтверждаются перед обменом."],
   [ArrowRightLeft, "Крипта и наличные", "Покупка и продажа USDT, криптовалюты и фиатных валют."],
+  [Calculator, "Примерный расчет", "Калькулятор помогает быстро понять ориентировочную сумму до заявки."],
 ];
 
 const benefitsEn = [
   [Zap, "No prepayments", "You do not transfer funds in advance. Terms are confirmed before the exchange."],
-  [MapPin, "City offices", "Choose your city and request the current exchange point address via Telegram."],
-  [WalletCards, "Office, courier and card", "Office exchange, courier service and card payout at the office are available."],
-  [MessageCircle, "Telegram request", "Rate, reserve and address can be confirmed in one chat."],
+  [WalletCards, "Office, courier and card", "Office exchange, courier service and card payout are available."],
+  [MessageCircle, "Telegram request", "Rate, reserve and terms can be confirmed in one chat."],
   [ShieldCheck, "Clear terms", "Final exchange terms are confirmed before the transaction."],
   [ArrowRightLeft, "Crypto and cash", "Buy and sell USDT, cryptocurrencies and fiat currencies."],
+  [Calculator, "Estimated calculation", "The calculator helps quickly understand the approximate amount before the request."],
 ];
 
 const reviewsRu = [
-  ["Алексей", "Воронеж", "Рассчитал сумму на сайте, написал в Telegram, курс подтвердили быстро."],
-  ["Марина", "Саратов", "Удобно, что есть выбор города и можно заранее понять примерную сумму обмена."],
-  ["Дмитрий", "Тула", "Понравилось, что не нужно долго искать контакт — сразу перешел в Telegram."],
-  ["Руслан", "Махачкала", "Обмен прошел спокойно, условия заранее согласовали."],
-  ["Екатерина", "Вологда", "Уточнила адрес через Telegram, приехала в офис и получила расчет без лишних вопросов."],
-  ["Игорь", "Красноярск", "Понравилось, что не просили предоплату. Сначала подтвердили курс и условия."],
-  ["Антон", "Волгоград", "Выбрал город, рассчитал USDT и сразу отправил заявку менеджеру."],
+  ["Алексей", "Рассчитал сумму на сайте, написал в Telegram, курс подтвердили быстро."],
+  ["Марина", "Удобно заранее понять примерную сумму обмена и сразу отправить заявку."],
+  ["Дмитрий", "Понравилось, что не нужно долго искать контакт — сразу перешел в Telegram."],
+  ["Руслан", "Обмен прошел спокойно, условия заранее согласовали."],
+  ["Екатерина", "Написала в Telegram, получила расчет и понятные условия без лишних вопросов."],
+  ["Игорь", "Понравилось, что не просили предоплату. Сначала подтвердили курс и условия."],
+  ["Антон", "Рассчитал USDT и сразу отправил заявку менеджеру."],
 ];
 
 const reviewsEn = [
-  ["Alex", "Voronezh", "I calculated the amount on the website, contacted Telegram and the rate was confirmed quickly."],
-  ["Marina", "Saratov", "It is convenient to choose a city and understand the estimated exchange amount in advance."],
-  ["Dmitry", "Tula", "I liked that the contact is easy to find — one click to Telegram."],
-  ["Ruslan", "Makhachkala", "The exchange was smooth, and the terms were agreed in advance."],
-  ["Ekaterina", "Vologda", "I requested the address via Telegram, came to the office and received the calculation without extra hassle."],
-  ["Igor", "Krasnoyarsk", "I liked that there was no prepayment. The rate and terms were confirmed first."],
-  ["Anton", "Volgograd", "I chose the city, calculated USDT and sent the request to the manager right away."],
+  ["Alex", "I calculated the amount on the website, contacted Telegram and the rate was confirmed quickly."],
+  ["Marina", "It is convenient to understand the estimated exchange amount in advance and send a request right away."],
+  ["Dmitry", "I liked that the contact is easy to find — one click to Telegram."],
+  ["Ruslan", "The exchange was smooth, and the terms were agreed in advance."],
+  ["Ekaterina", "I contacted Telegram, received the calculation and clear terms without extra hassle."],
+  ["Igor", "I liked that there was no prepayment. The rate and terms were confirmed first."],
+  ["Anton", "I calculated USDT and sent the request to the manager right away."],
 ];
 
 const faqRu = [
   ["Какие валюты доступны?", "RUB, KZT, USD, EUR, CNY, AED, TRY, THB и популярные криптовалюты."],
   ["Какие криптовалюты можно обменять?", "USDT, BTC, ETH, USDC, TON, TRX, BNB, SOL, LTC, XRP."],
-  ["Калькулятор показывает точную сумму?", "Калькулятор показывает ориентировочный расчет. Финальный курс, резерв и условия подтверждаются через Telegram."],
-  ["Где находятся обменные пункты?", "Выберите город на сайте и напишите в Telegram. Менеджер подскажет актуальный адрес."],
+  ["Калькулятор показывает точную сумму?", "Нет. Калькулятор показывает ориентировочный расчет. Финальный курс, резерв и условия подтверждаются через Telegram."],
+  ["Какой график работы?", "Мы работаем ежедневно с 09:00 до 19:30."],
   ["Можно ли обменять крупную сумму?", "Да, крупные суммы согласовываются индивидуально."],
   ["Как зафиксировать курс?", "После расчета нажмите кнопку фиксации курса и отправьте заявку менеджеру в Telegram."],
 ];
@@ -364,8 +183,8 @@ const faqRu = [
 const faqEn = [
   ["Which fiat currencies are available?", "RUB, KZT, USD, EUR, CNY, AED, TRY, THB and popular cryptocurrencies."],
   ["Which cryptocurrencies are supported?", "USDT, BTC, ETH, USDC, TON, TRX, BNB, SOL, LTC, XRP."],
-  ["Is the calculator amount final?", "The calculator shows an estimated result. The final rate, reserve and terms are confirmed via Telegram."],
-  ["Where are the exchange points located?", "Choose a city and contact us on Telegram. A manager will provide the current address."],
+  ["Is the calculator amount final?", "No. The calculator shows an estimated result. The final rate, reserve and terms are confirmed via Telegram."],
+  ["What are the working hours?", "We work daily from 09:00 to 19:30."],
   ["Can I exchange a large amount?", "Yes, large amounts are agreed individually."],
   ["How can I fix the rate?", "After calculation, click the rate fixation button and send the request to a manager on Telegram."],
 ];
@@ -382,8 +201,8 @@ function formatNumber(value, max = 6) {
   }).format(value);
 }
 
-function telegramLink({ amount, from, to, city, result }) {
-  const text = `Здравствуйте. Хочу обменять ${amount} ${from} на ${to}. Город: ${city}. Расчет сайта: примерно ${formatNumber(result)} ${to}.`;
+function telegramLink({ amount, from, to, result }) {
+  const text = `Здравствуйте. Хочу обменять ${amount} ${from} на ${to}. Расчет сайта: примерно ${formatNumber(result)} ${to}.`;
   return `${TELEGRAM_URL}?text=${encodeURIComponent(text)}`;
 }
 
@@ -435,11 +254,6 @@ export default function TetherPointSite() {
   const [amount, setAmount] = useState("100000");
   const [from, setFrom] = useState("RUB");
   const [to, setTo] = useState("USDT");
-  const [city, setCity] = useState(cityNamesRu[0]);
-  const [usdPrices, setUsdPrices] = useState(fallbackUsdPrices);
-  const [fxToUsd, setFxToUsd] = useState(fallbackFxToUsd);
-  const [liveRates, setLiveRates] = useState(false);
-  const [loading, setLoading] = useState(false);
   const reviewsRef = useRef(null);
 
   const scrollReviews = (direction) => {
@@ -451,121 +265,32 @@ export default function TetherPointSite() {
   };
 
   const t = lang === "ru" ? ru : en;
-  const cities = lang === "ru" ? cityNamesRu : cityNamesEn;
   const benefits = lang === "ru" ? benefitsRu : benefitsEn;
   const steps = lang === "ru" ? stepsRu : stepsEn;
   const safety = lang === "ru" ? safetyRu : safetyEn;
   const reviews = lang === "ru" ? reviewsRu : reviewsEn;
   const faqs = lang === "ru" ? faqRu : faqEn;
 
-  useEffect(() => {
-    const fromList = lang === "ru" ? cityNamesEn : cityNamesRu;
-    const toList = lang === "ru" ? cityNamesRu : cityNamesEn;
-    const currentIndex = fromList.indexOf(city);
-    setCity(currentIndex >= 0 ? toList[currentIndex] : toList[0]);
-  }, [lang]);
-
-  useEffect(() => {
-    let isMounted = true;
-
-    async function loadRates() {
-      setLoading(true);
-      try {
-        const ids = Object.values(cryptoIds).join(",");
-        const cryptoSymbols = [
-          "BTCUSDT",
-          "ETHUSDT",
-          "BNBUSDT",
-          "SOLUSDT",
-          "LTCUSDT",
-          "XRPUSDT",
-          "TRXUSDT",
-          "TONUSDT",
-          "USDCUSDT",
-        ];
-        const cryptoResponse = await fetch(
-          `https://api.binance.com/api/v3/ticker/price?symbols=${encodeURIComponent(JSON.stringify(cryptoSymbols))}`,
-          { cache: "no-store" }
-        );
-        const cryptoData = await cryptoResponse.json();
-
-        const usdPricesNext = { ...fallbackUsdPrices, USDT: 1 };
-        const pairToSymbol = {
-          BTCUSDT: "BTC",
-          ETHUSDT: "ETH",
-          BNBUSDT: "BNB",
-          SOLUSDT: "SOL",
-          LTCUSDT: "LTC",
-          XRPUSDT: "XRP",
-          TRXUSDT: "TRX",
-          TONUSDT: "TON",
-          USDCUSDT: "USDC",
-        };
-        if (Array.isArray(cryptoData)) {
-          cryptoData.forEach((row) => {
-            const symbol = pairToSymbol[row.symbol];
-            if (symbol && row.price) usdPricesNext[symbol] = Number(row.price);
-          });
-        }
-
-        const fxResponse = await fetch(`https://open.er-api.com/v6/latest/USD?t=${Date.now()}`, { cache: "no-store" });
-        const fxData = await fxResponse.json();
-        const rates = fxData?.rates || {};
-        const marketRubRate = rates.RUB ? Number(rates.RUB) : 0;
-        const serviceRubRate = getRubServiceRate(marketRubRate, city);
-
-        const fxNext = {
-          USD: 1,
-          RUB: 1 / serviceRubRate,
-          KZT: rates.KZT ? 1 / Number(rates.KZT) : fallbackFxToUsd.KZT,
-          EUR: rates.EUR ? 1 / Number(rates.EUR) : fallbackFxToUsd.EUR,
-          CNY: rates.CNY ? 1 / Number(rates.CNY) : fallbackFxToUsd.CNY,
-          AED: rates.AED ? 1 / Number(rates.AED) : fallbackFxToUsd.AED,
-          TRY: rates.TRY ? 1 / Number(rates.TRY) : fallbackFxToUsd.TRY,
-          THB: rates.THB ? 1 / Number(rates.THB) : fallbackFxToUsd.THB,
-        };
-
-        if (isMounted) {
-          setUsdPrices(usdPricesNext);
-          setFxToUsd(fxNext);
-          setLiveRates(true);
-        }
-      } catch (error) {
-        if (isMounted) setLiveRates(false);
-      } finally {
-        if (isMounted) setLoading(false);
-      }
-    }
-
-    loadRates();
-    const interval = setInterval(loadRates, 300000);
-    return () => {
-      isMounted = false;
-      clearInterval(interval);
-    };
-  }, [city]);
-
   const amountNumber = Number(String(amount).replace(",", ".")) || 0;
 
   const result = useMemo(() => {
     const fromUsd = isCrypto(from) ? usdPrices[from] : fxToUsd[from];
     const toUsd = isCrypto(to) ? usdPrices[to] : fxToUsd[to];
-    let value = (amountNumber * fromUsd) / toUsd;
-
-    if (!isCrypto(from) && isCrypto(to)) value = value / exchangeMarkup.fiatToCrypto;
-    if (isCrypto(from) && !isCrypto(to)) value = value * exchangeMarkup.cryptoToFiat;
-    if (isCrypto(from) && isCrypto(to)) value = value * exchangeMarkup.cryptoToCrypto;
-    if (!isCrypto(from) && !isCrypto(to)) value = value * exchangeMarkup.fiatToFiat;
-
-    return value;
-  }, [amountNumber, from, to, usdPrices, fxToUsd]);
+    const baseValue = (amountNumber * fromUsd) / toUsd;
+    return baseValue * CLIENT_RATE_BONUS;
+  }, [amountNumber, from, to]);
 
   const estimatedRate = amountNumber > 0 ? result / amountNumber : 0;
   const rateText =
     !isCrypto(from) && isCrypto(to) && estimatedRate > 0
       ? `1 ${to} ≈ ${formatNumber(1 / estimatedRate, 2)} ${from}`
       : `1 ${from} ≈ ${formatNumber(estimatedRate, 2)} ${to}`;
-  const tgHref = telegramLink({ amount, from, to, city, result });
+  const tgHref = telegramLink({ amount, from, to, result });
+
+  const swapDirection = () => {
+    setFrom(to);
+    setTo(from);
+  };
 
   return (
     <div className="min-h-screen bg-[#070908] text-white">
@@ -585,7 +310,7 @@ export default function TetherPointSite() {
           </a>
           <nav className="hidden items-center gap-6 text-sm text-white/70 lg:flex">
             {t.nav.map((item, index) => (
-              <a key={item} href={["#calculator", "#cities", "#benefits", "#reviews", "#faq"][index]} className="transition hover:text-white">
+              <a key={item} href={["#calculator", "#benefits", "#reviews", "#faq"][index]} className="transition hover:text-white">
                 {item}
               </a>
             ))}
@@ -621,6 +346,13 @@ export default function TetherPointSite() {
               {t.heroSubtitle}
             </p>
             <p className="mt-5 max-w-2xl text-lg leading-8 text-white/58">{t.heroText}</p>
+            <div className="mt-6 inline-flex items-center gap-3 rounded-2xl border border-emerald-400/20 bg-emerald-400/10 px-5 py-4 text-emerald-100">
+              <CheckCircle2 className="h-5 w-5" />
+              <div>
+                <div className="text-sm font-bold text-emerald-300">{t.hoursTitle}</div>
+                <div className="text-lg font-black">{WORKING_HOURS}</div>
+              </div>
+            </div>
             <div className="mt-8 flex flex-col gap-3 sm:flex-row">
               <a href="#calculator" className="inline-flex h-14 items-center justify-center gap-2 rounded-2xl bg-emerald-400 px-6 text-base font-black text-[#07100c] transition hover:bg-emerald-300">
                 <Calculator className="h-5 w-5" /> {t.calcBtn}
@@ -645,17 +377,17 @@ export default function TetherPointSite() {
                   <LogoMark />
                   <div>
                     <div className="font-black">Tether <span className="text-emerald-400">Point</span></div>
-                    <div className="text-sm text-white/50">USDT • НАЛИЧНЫЕ • ОБМЕН</div>
+                    <div className="text-sm text-white/50">USDT • CASH • EXCHANGE</div>
                   </div>
                 </div>
                 <div className="rounded-full bg-emerald-400/10 px-3 py-1 text-xs font-bold text-emerald-300">
-                  {liveRates ? t.live : t.fallback}
+                  {t.estimated}
                 </div>
               </div>
               <div className="space-y-3">
                 <div className="rounded-3xl bg-[#101512] p-4">
                   <div className="mb-2 text-sm text-white/50">1 USDT</div>
-                  <div className="text-4xl font-black text-white">≈ {formatNumber(usdPrices.USDT / fxToUsd.RUB, 2)} RUB</div>
+                  <div className="text-4xl font-black text-white">≈ {formatNumber((usdPrices.USDT / fxToUsd.RUB) / CLIENT_RATE_BONUS, 2)} RUB</div>
                 </div>
                 <div className="grid grid-cols-2 gap-3">
                   <div className="rounded-3xl bg-[#101512] p-4">
@@ -692,16 +424,22 @@ export default function TetherPointSite() {
                 </label>
                 <SelectBox label={t.give} value={from} onChange={setFrom} items={allCurrencies} />
                 <SelectBox label={t.receive} value={to} onChange={setTo} items={allCurrencies} />
-                <SelectBox label={t.city} value={city} onChange={setCity} items={cities} />
-                <div className="rounded-2xl border border-white/10 bg-white/[0.04] p-4">
-                  <div className="mb-2 text-sm text-white/60">{loading ? t.loading : t.rate}</div>
+                <button
+                  type="button"
+                  onClick={swapDirection}
+                  className="md:col-span-2 inline-flex h-13 items-center justify-center gap-2 rounded-2xl border border-emerald-400/30 bg-emerald-400/10 px-5 py-4 text-base font-black text-emerald-200 transition hover:bg-emerald-400/18"
+                >
+                  <ArrowRightLeft className="h-5 w-5" /> {t.swap}
+                </button>
+                <div className="md:col-span-2 rounded-2xl border border-white/10 bg-white/[0.04] p-4">
+                  <div className="mb-2 text-sm text-white/60">{t.rate}</div>
                   <div className="text-lg font-black">{rateText}</div>
                 </div>
               </div>
             </div>
             <div className="rounded-[2rem] border border-emerald-400/20 bg-gradient-to-br from-emerald-400/15 to-white/[0.06] p-6 md:p-8">
               <div className="mb-4 inline-flex rounded-full bg-emerald-400/10 px-3 py-1 text-sm font-bold text-emerald-200">
-                {city}
+                {t.estimated}
               </div>
               <div className="text-sm text-white/55">{t.result}</div>
               <div className="mt-3 break-all text-4xl font-black tracking-tight text-white md:text-5xl">
@@ -715,25 +453,6 @@ export default function TetherPointSite() {
           </div>
         </section>
 
-        <section id="cities" className="mx-auto max-w-7xl px-4 py-16 md:px-6 md:py-24">
-          <SectionTitle kicker="Russia" title={t.citiesTitle} text={t.citiesText} />
-          <div className="grid gap-2 min-[420px]:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
-            {cities.map((item) => (
-              <div key={item} className="group rounded-3xl border border-white/8 bg-white/[0.045] p-4 transition hover:border-emerald-400/35 hover:bg-emerald-400/[0.08] md:p-5">
-                <div className="mb-4 flex items-center gap-3">
-                  <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-emerald-400/10 text-emerald-300 md:h-11 md:w-11">
-                    <MapPin className="h-5 w-5" />
-                  </div>
-                  <div className="text-base font-black leading-tight md:text-lg">{item}</div>
-                </div>
-                <a href={`${TELEGRAM_URL}?text=${encodeURIComponent(`Здравствуйте. Хочу уточнить адрес обменного пункта Tether Point. Город: ${item}.`)}`} className="inline-flex w-full items-center justify-center rounded-2xl border border-white/10 bg-white/[0.05] px-4 py-3 text-sm font-bold text-white/80 transition group-hover:border-emerald-400/35 group-hover:text-emerald-200">
-                  {t.addressBtn}
-                </a>
-              </div>
-            ))}
-          </div>
-        </section>
-
         <section className="mx-auto max-w-7xl px-4 py-16 md:px-6 md:py-24">
           <SectionTitle
             kicker="Process"
@@ -742,7 +461,7 @@ export default function TetherPointSite() {
           />
           <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
             {steps.map(([num, title, text]) => (
-              <div key={num} className="relative rounded-[1.75rem] border border-white/8 bg-white/[0.045] p-6 overflow-hidden">
+              <div key={num} className="relative overflow-hidden rounded-[1.75rem] border border-white/8 bg-white/[0.045] p-6">
                 <div className="absolute -right-3 -top-5 text-7xl font-black text-emerald-400/10">{num}</div>
                 <div className="mb-5 inline-flex h-11 min-w-11 items-center justify-center rounded-2xl bg-emerald-400/10 px-3 text-sm font-black text-emerald-300">
                   {num}
@@ -776,10 +495,10 @@ export default function TetherPointSite() {
         <section id="benefits" className="mx-auto max-w-7xl px-4 py-16 md:px-6 md:py-24">
           <SectionTitle kicker="Benefits" title={t.whyTitle} />
           <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-            {benefits.map(([Icon, title, text]) => (
+            {benefits.map(([BenefitIcon, title, text]) => (
               <div key={title} className="rounded-[1.75rem] border border-white/8 bg-white/[0.045] p-6">
                 <div className="mb-5 flex h-12 w-12 items-center justify-center rounded-2xl bg-emerald-400/10 text-emerald-300">
-                  <Icon className="h-6 w-6" />
+                  <BenefitIcon className="h-6 w-6" />
                 </div>
                 <h3 className="text-xl font-black">{title}</h3>
                 <p className="mt-3 leading-7 text-white/58">{text}</p>
@@ -791,29 +510,14 @@ export default function TetherPointSite() {
         <section id="reviews" className="mx-auto max-w-7xl px-4 py-16 md:px-6 md:py-24">
           <div className="mb-10 flex items-end justify-between gap-4">
             <div className="max-w-2xl">
-              <div className="mb-3 text-sm font-semibold uppercase tracking-[0.24em] text-emerald-300">
-                Reviews
-              </div>
-              <h2 className="text-3xl font-bold tracking-tight text-white md:text-5xl">
-                {t.reviewsTitle}
-              </h2>
+              <div className="mb-3 text-sm font-semibold uppercase tracking-[0.24em] text-emerald-300">Reviews</div>
+              <h2 className="text-3xl font-bold tracking-tight text-white md:text-5xl">{t.reviewsTitle}</h2>
             </div>
-
             <div className="hidden items-center gap-3 md:flex">
-              <button
-                type="button"
-                onClick={() => scrollReviews("left")}
-                className="flex h-12 w-12 items-center justify-center rounded-2xl border border-white/10 bg-white/[0.05] text-2xl font-black text-white transition hover:border-emerald-400/40 hover:bg-emerald-400/10 hover:text-emerald-300"
-                aria-label="Previous reviews"
-              >
+              <button type="button" onClick={() => scrollReviews("left")} className="flex h-12 w-12 items-center justify-center rounded-2xl border border-white/10 bg-white/[0.05] text-2xl font-black text-white transition hover:border-emerald-400/40 hover:bg-emerald-400/10 hover:text-emerald-300" aria-label="Previous reviews">
                 <ChevronLeft />
               </button>
-              <button
-                type="button"
-                onClick={() => scrollReviews("right")}
-                className="flex h-12 w-12 items-center justify-center rounded-2xl border border-white/10 bg-white/[0.05] text-2xl font-black text-white transition hover:border-emerald-400/40 hover:bg-emerald-400/10 hover:text-emerald-300"
-                aria-label="Next reviews"
-              >
+              <button type="button" onClick={() => scrollReviews("right")} className="flex h-12 w-12 items-center justify-center rounded-2xl border border-white/10 bg-white/[0.05] text-2xl font-black text-white transition hover:border-emerald-400/40 hover:bg-emerald-400/10 hover:text-emerald-300" aria-label="Next reviews">
                 <ChevronRight />
               </button>
             </div>
@@ -822,24 +526,15 @@ export default function TetherPointSite() {
           <div className="relative">
             <div className="pointer-events-none absolute left-0 top-0 z-10 hidden h-full w-20 bg-gradient-to-r from-[#070908] to-transparent md:block" />
             <div className="pointer-events-none absolute right-0 top-0 z-10 hidden h-full w-20 bg-gradient-to-l from-[#070908] to-transparent md:block" />
-
-            <div
-              ref={reviewsRef}
-              className="flex snap-x snap-mandatory gap-4 overflow-x-auto pb-3 [scrollbar-width:none] [-ms-overflow-style:none]"
-              style={{ WebkitOverflowScrolling: "touch" }}
-            >
-              {reviews.map(([name, cityName, text]) => (
-                <div
-                  key={`${name}-${cityName}`}
-                  className="min-w-[310px] max-w-[310px] snap-start rounded-[1.75rem] border border-white/8 bg-white/[0.045] p-6 transition hover:border-emerald-400/30 hover:bg-emerald-400/[0.07] md:min-w-[370px] md:max-w-[370px]"
-                >
+            <div ref={reviewsRef} className="flex snap-x snap-mandatory gap-4 overflow-x-auto pb-3 [scrollbar-width:none] [-ms-overflow-style:none]" style={{ WebkitOverflowScrolling: "touch" }}>
+              {reviews.map(([name, text]) => (
+                <div key={name} className="min-w-[310px] max-w-[310px] snap-start rounded-[1.75rem] border border-white/8 bg-white/[0.045] p-6 transition hover:border-emerald-400/30 hover:bg-emerald-400/[0.07] md:min-w-[370px] md:max-w-[370px]">
                   <div className="mb-4 flex gap-1 text-emerald-300">
                     {Array.from({ length: 5 }).map((_, i) => <Star key={i} className="h-4 w-4 fill-current" />)}
                   </div>
                   <p className="min-h-[126px] leading-7 text-white/72">“{text}”</p>
                   <div className="mt-5 border-t border-white/8 pt-4">
                     <div className="font-black">{name}</div>
-                    <div className="text-sm text-white/45">{cityName}</div>
                   </div>
                 </div>
               ))}
@@ -847,20 +542,10 @@ export default function TetherPointSite() {
           </div>
 
           <div className="mt-5 flex items-center justify-center gap-3 md:hidden">
-            <button
-              type="button"
-              onClick={() => scrollReviews("left")}
-              className="flex h-11 w-11 items-center justify-center rounded-2xl border border-white/10 bg-white/[0.05] text-2xl font-black text-white transition hover:border-emerald-400/40 hover:bg-emerald-400/10 hover:text-emerald-300"
-              aria-label="Previous reviews"
-            >
+            <button type="button" onClick={() => scrollReviews("left")} className="flex h-11 w-11 items-center justify-center rounded-2xl border border-white/10 bg-white/[0.05] text-2xl font-black text-white transition hover:border-emerald-400/40 hover:bg-emerald-400/10 hover:text-emerald-300" aria-label="Previous reviews">
               <ChevronLeft />
             </button>
-            <button
-              type="button"
-              onClick={() => scrollReviews("right")}
-              className="flex h-11 w-11 items-center justify-center rounded-2xl border border-white/10 bg-white/[0.05] text-2xl font-black text-white transition hover:border-emerald-400/40 hover:bg-emerald-400/10 hover:text-emerald-300"
-              aria-label="Next reviews"
-            >
+            <button type="button" onClick={() => scrollReviews("right")} className="flex h-11 w-11 items-center justify-center rounded-2xl border border-white/10 bg-white/[0.05] text-2xl font-black text-white transition hover:border-emerald-400/40 hover:bg-emerald-400/10 hover:text-emerald-300" aria-label="Next reviews">
               <ChevronRight />
             </button>
           </div>
@@ -886,6 +571,7 @@ export default function TetherPointSite() {
             <CheckCircle2 className="mx-auto mb-5 h-12 w-12 text-emerald-300" />
             <h2 className="text-3xl font-black md:text-5xl">Tether <span className="text-emerald-400">Point</span></h2>
             <p className="mx-auto mt-4 max-w-2xl text-white/60">{t.heroText}</p>
+            <div className="mt-4 text-lg font-black text-emerald-300">{t.hoursText}</div>
             <a href={TELEGRAM_URL} className="mt-7 inline-flex h-14 items-center justify-center gap-2 rounded-2xl bg-emerald-400 px-7 text-base font-black text-[#07100c] transition hover:bg-emerald-300">
               <MessageCircle className="h-5 w-5" /> {t.tgBtn}
             </a>
@@ -900,6 +586,7 @@ export default function TetherPointSite() {
             <div>
               <div className="font-black text-white">Tether <span className="text-emerald-400">Point</span></div>
               <div className="whitespace-pre-line leading-6">{t.footerText}</div>
+              <div className="mt-2 font-bold text-emerald-300">{t.hoursText}</div>
             </div>
           </div>
           <a href={TELEGRAM_URL} className="font-bold text-emerald-300">@TetherPointExchange</a>
