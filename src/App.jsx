@@ -19,7 +19,7 @@ const Zap = ({ className = "" }) => <Icon className={className}>⚡</Icon>;
 
 const TELEGRAM_URL = "https://t.me/TetherPointExchange";
 const WORKING_HOURS = "09:00–19:30";
-const CLIENT_RATE_BONUS = 1.02;
+const CLIENT_RATE_BONUS = 1;
 
 const fiatCurrencies = ["RUB", "KZT", "USD", "EUR", "CNY", "AED", "TRY", "THB"];
 const cryptoCurrencies = ["USDT", "BTC", "ETH", "USDC", "TON", "TRX", "BNB", "SOL", "LTC", "XRP"];
@@ -41,7 +41,7 @@ const usdPrices = {
 const fxToUsd = {
   USD: 1,
   EUR: 1.09,
-  RUB: 1 / 78,
+  RUB: 1 / 77.2,
   KZT: 1 / 520,
   CNY: 1 / 7.2,
   AED: 1 / 3.6725,
@@ -380,7 +380,7 @@ export default function TetherPointSite() {
               <div className="space-y-3">
                 <div className="rounded-3xl bg-[#101512] p-4">
                   <div className="mb-2 text-sm text-white/50">1 USDT</div>
-                  <div className="text-4xl font-black text-white">≈ {formatNumber((usdPrices.USDT / fxToUsd.RUB) / CLIENT_RATE_BONUS, 2)} RUB</div>
+                  <div className="text-4xl font-black text-white">≈ {formatNumber((usdPrices.USDT / fxToUsd.RUB) * CLIENT_RATE_BONUS, 2)} RUB</div>
                 </div>
                 <div className="grid grid-cols-2 gap-3">
                   <div className="rounded-3xl bg-[#101512] p-4">
